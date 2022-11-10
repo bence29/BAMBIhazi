@@ -43,8 +43,8 @@ typedef struct //structban NEM lehet kezdõ értéket adni sadge
 {
 	uint8_t body[37];
 	uint8_t size;
-	enum direction { up , down , left , right, upleft, downleft, upright, downright, rightdown, leftdown, rightup, leftup } dir;
-	enum direction prevdir;
+	enum direction { upup , downdown , leftleft , rightright, upleft, downleft, upright, downright, rightdown, leftdown, rightup, leftup } dir;
+// dir elsõ tagja a múltbeli irány, hátsó tagja pedig a következõ írány, ez egyértelmûen maghatározza a kígyó irányát
 	bool isAlive;
 } snake;
 
@@ -53,7 +53,7 @@ snake SnakeInit(snake mysnake){
 		mysnake.body[i]=0;
 	mysnake.body[15]=1; //itt indul a snake
 	mysnake.size=1;   //1 méretû
-	mysnake.dir=right; //persze jobbra néz
+	mysnake.dir=rightright; //persze jobbra néz
 	mysnake.isAlive=true; //és él
 	return mysnake;
 }
@@ -66,190 +66,239 @@ uint8_t PlaceFood(snake mysnake) {  //random helyre rakja a kaját ahol nincs a k
 	return food;
 }
 
-snake MoveSnake(snake mysnake) {
-	uint8_t head;
-	bool errorbit=true;
+snake MoveSnake(snake mysnake, uint8_t fruit) { //snake-et mozgatja, nézi a magábaharapást és a gyümölcsevést is, és lekezeli
+	uint8_t head, headforfruit; //head lesz az, amit nézni fog az irány mellett ahhoz, hogy merre léptesse a kígyót, de a head a lépés után el lesz rontva, hogy átugorja a többi if else-t, a headforfruit megmarad, hogy a gyümölcs check-re megmaradjon a fej helyzete
+	bool errorbit=true; //ha ez nem fordul false-ba és nem marad úgy, akkor size!=(legnagyobb mysnake.body[] tagjával, valami nagyon nem oké)
 	for(uint8_t i=0; i<36; i++)
 		if(mysnake.body[i]==mysnake.size){
 			head=i;
-			errorbit=false;
+			errorbit=false; //ha egyezik a size a body egyik tagjával, akkor vagy egyezik a size a body size-jával, vagy kisebb, de nem nagyobb legalább, nem lesz hiba
 		}
-	if(errorbit) //hibakeresés, mivel térjen vissza?
-		return -1;
-	if((head<6)&&(mysnake.dir==right)) { //az összes jobbra tartó eset
-		if(mysnake.body[head+1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+1]=mysnake.size+1;
-		head=37;
+	for(uint8_t i=0; i<36; i++)
+		if(mysnake.body[i]>mysnake.size)
+			errorbit=true; //így már biztos, hogy a size egyezik a body legnagyobb tagjával, ha nem akkor error van
+	if(errorbit) {//hibakeresés, mivel térjen vissza?
+		mysnake.isAlive=false;
+		for(uint8_t i=0; i<37; i++)
+			mysnake.body[i]=0;
+		mysnake.size=0;
+		mysnake.dir=rightright;
+		return mysnake;
 	}
-	else if((head==6)&&(mysnake.dir==right)) {
-		if(mysnake.body[0]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[0]=mysnake.size+1;
-		head=37;
+	headforfruit=head;
+	if((mysnake.dir==upup)||mysnake.dir==downdown) {  //upup , downdown , leftleft , rightright, upleft, downleft, upright, downright, rightdown, leftdown, rightup, leftup
+		if(head>=7&&head<=14) {
+			if(mysnake.body[head+15]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+15]=mysnake.size+1;
+			head=37;
+		}
+		else if(head>=22&&head<=29) {
+			if(mysnake.body[head-15]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-15]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head<14)&&(mysnake.dir==upright)) {
-		if(mysnake.body[head-7]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-7]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==leftleft) {
+		if((head>=1&&head<=6)||(head>=16&&head<=21)||(head>=31&&head<=36)) {
+			if(mysnake.body[head-1]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-1]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==0||head==15||head==30) {
+			if(mysnake.body[head+6]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+6]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head==14)&&(mysnake.dir==upright)) {
-		if(mysnake.body[0]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[0]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==rightright) {
+		if((head>=0&&head<=5)||(head>=15&&head<=20)||(head>=30&&head<=35)) {
+			if(mysnake.body[head+1]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+1]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==6||head==21||head==36) {
+			if(mysnake.body[head-6]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-6]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head<14)&&(mysnake.dir==downright)) {
-		if(mysnake.body[head+8]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+8]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==upleft) {
+		if((head>=8&&head<=14)||(head>=23&&head<=29)) {
+			if(mysnake.body[head-8]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-8]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==7||head==22) {
+			if(mysnake.body[head-1]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-1]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head==14)&&(mysnake.dir==downright)) {
-		if(mysnake.body[15]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[15]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==downleft) {
+		if((head>=8&&head<=14)||(head>=23&&head<=29)) { //aaaa
+			if(mysnake.body[head+7]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+7]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==7||head==22) {
+			if(mysnake.body[head+14]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+14]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head<21)&&(mysnake.dir==right)) {
-		if(mysnake.body[head+1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+1]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==upright) {
+		if((head>=7&&head<=13)||(head>=22&&head<=28)) {
+			if(mysnake.body[head-7]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-7]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==14||head==29) {
+			if(mysnake.body[head-14]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-14]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head==21)&&(mysnake.dir==right)) {
-		if(mysnake.body[15]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[15]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==downright) {
+		if((head>=7&&head<=13)||(head>=22&&head<=28)) {
+			if(mysnake.body[head+8]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+8]=mysnake.size+1;
+			head=37;
+		}
+		else if(head==14||head==29) {
+			if(mysnake.body[head+1]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+1]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head<29)&&(mysnake.dir==upright)) { //a kígyó oldalról fel és le is tud jobbra menni
-		if(mysnake.body[head-7]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-7]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==rightdown) {
+		if((head>=0&&head<=6)||(head>=15&&head<=21)) {
+			if(mysnake.body[head+8]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+8]=mysnake.size+1;
+			head=37;
+		}
+		else if(head>=30&&head<=36) {
+			if(mysnake.body[head-22]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-22]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head==29)&&(mysnake.dir==upright)) {
-		if(mysnake.body[15]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[15]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==leftdown) {
+		if((head>=0&&head<=6)||(head>=15&&head<=21)) {
+			if(mysnake.body[head+7]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+7]=mysnake.size+1;
+			head=37;
+		}
+		else if(head>=30&&head<=36) {
+			if(mysnake.body[head-23]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-23]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head<29)&&(mysnake.dir==downright)) {
-		if(mysnake.body[head+8]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+8]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==rightup) {
+		if((head>=15&&head<=21)||(head>=30&&head<=36)) {
+			if(mysnake.body[head-7]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-7]=mysnake.size+1;
+			head=37;
+		}
+		else if(head>=0&&head<=6) {
+			if(mysnake.body[head+23]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+23]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
 	}
-	else if((head==29)&&(mysnake.dir==downright)) {
-		if(mysnake.body[30]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[30]=mysnake.size+1;
-		head=37;
+	else if(mysnake.dir==leftup) {
+		if((head>=15&&head<=21)||(head>=30&&head<=36)) {
+			if(mysnake.body[head-8]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head-8]=mysnake.size+1;
+			head=37;
+		}
+		else if(head>=0&&head<=6) {
+			if(mysnake.body[head+22]!=0)
+				mysnake.isAlive=false;
+			mysnake.body[head+22]=mysnake.size+1;
+			head=37;
+		}
+		else {
+			errorbit=true;
+			head=37;
+		}
+	} //198 sornyi csoda
+	if(errorbit) {//hibakeresés, mivel térjen vissza?
+		mysnake.isAlive=false;
+		for(uint8_t i=0; i<37; i++)
+			mysnake.body[i]=0;
+		mysnake.size=0;
+		mysnake.dir=rightright;
+		return mysnake;
 	}
-	else if((head<36)&&(mysnake.dir==right)) {
-		if(mysnake.body[head+1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+1]=mysnake.size+1;
-		head=37;
+	mysnake.size++; //növeljük a size méretét, feltételezve, hogy megette a gyümölcsöt
+	if(headforfruit!=fruit) {//ha a fej helyzete a gyümölcsben van, akkor megette, tehát a kígyó méretét nem kell csökkenteni, amúgy meg igen, és...
+		for(uint8_t i=0; i<36; i++)
+			mysnake.body[i]--;
+		mysnake.size--;   //mivel nem ette meg a gyümölcsöt, csökkentsük vissza a méretet
 	}
-	else if((head==36)&&(mysnake.dir==right)) {
-		if(mysnake.body[30]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[30]=mysnake.size+1;
-		head=37;
-	}
-
-
-
-	else if((head<=6)&&(head>0)&&(mysnake.dir==left)) { //az összes balra tartó eset
-		if(mysnake.body[head-1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-1]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==0)&&(mysnake.dir==left)) {
-		if(mysnake.body[6]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[6]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=14)&&(head>7)&&(mysnake.dir==upleft)) {
-		if(mysnake.body[head-8]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-8]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==7)&&(mysnake.dir==upleft)) {
-		if(mysnake.body[6]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[6]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=14)&&(head>7)&&(mysnake.dir==downleft)) {
-		if(mysnake.body[head+7]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+7]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==7)&&(mysnake.dir==downleft)) {
-		if(mysnake.body[21]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[21]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=21)&&(head>15)&&(mysnake.dir==left)) {
-		if(mysnake.body[head-1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-1]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==15)&&(mysnake.dir==left)) {
-		if(mysnake.body[21]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[21]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=29)&&(head>22)&&(mysnake.dir==upleft)) {
-		if(mysnake.body[head-8]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-8]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==22)&&(mysnake.dir==upleft)) {
-		if(mysnake.body[21]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[21]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=29)&&(head>22)&&(mysnake.dir==downleft)) {
-		if(mysnake.body[head+7]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head+7]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==22)&&(mysnake.dir==downleft)) {
-		if(mysnake.body[36]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[36]=mysnake.size+1;
-		head=37;
-	}
-	else if((head<=36)&&(head>30)&&(mysnake.dir==left)) {
-		if(mysnake.body[head-1]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[head-1]=mysnake.size+1;
-		head=37;
-	}
-	else if((head==30)&&(mysnake.dir==left)) {
-		if(mysnake.body[36]!=0)
-			mysnake.isAlive=false;
-		mysnake.body[36]=mysnake.size+1;
-		head=37;
-	}
-
-	//up és down-okkal folytatni!!4!!!44!
-
+	return mysnake; //még nem jó, le kell rakni új gyümölcsöt!!!!4!!!!4!
 }
 
 SegmentLCD_LowerCharSegments_TypeDef SnakeandFoodtoLCD(snake thesnake, uint8_t food, SegmentLCD_LowerCharSegments_TypeDef *disp){
