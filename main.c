@@ -20,10 +20,6 @@
 extern volatile int UARTvalue;
 extern volatile bool UARTflag;
 
-
-
-
-
 volatile uint32_t msTicks; /* counts 1ms timeTicks */
 
 /* Local prototypes */
@@ -76,6 +72,75 @@ uint8_t PlaceFood(snake mysnake) {  //random helyre rakja a kaját ahol nincs a k
 		food=rand()%36;
 	} while(mysnake.body[food]!=0);
 	return food;
+}
+
+snake NextDir(snake mysnake, char uartdir) {
+	if(uartdir=='j') //ha jobbra fordul
+		switch(mysnake.dir) {
+			case(rightright):
+			case(upright):
+			case(downright):
+				mysnake.dir=rightdown;
+				break;
+			case(leftleft):
+			case(upleft):
+			case(downleft):
+				mysnake.dir=leftup;
+				break;
+			case(rightdown):
+			case(leftdown):
+			case(downdown):
+				mysnake.dir=downleft;
+				break;
+			case(rightup):
+			case(leftup):
+			case(upup):
+				mysnake.dir=upright;
+				break;
+			default:
+				mysnake.size=0;
+				mysnake.dir=rightright;
+				mysnake.isAlive=false;
+				for(uint8_t i; i<36; i++)
+					mysnake.body[i]=0;
+				break;
+		}
+	else if(uartdir=='b') //ha balra fordul
+		switch(mysnake.dir) {
+			case(rightright):
+			case(upright):
+			case(downright):
+				mysnake.dir=rightup;
+				break;
+			case(leftleft):
+			case(upleft):
+			case(downleft):
+				mysnake.dir=leftdown;
+				break;
+			case(rightdown):
+			case(leftdown):
+			case(downdown):
+				mysnake.dir=downright;
+				break;
+			case(rightup):
+			case(leftup):
+			case(upup):
+				mysnake.dir=upleft;
+				break;
+			default:
+				mysnake.size=0;
+				mysnake.dir=rightright;
+				mysnake.isAlive=false;
+				for(uint8_t i; i<36; i++)
+					mysnake.body[i]=0;
+				break;
+		}
+	else {
+		char kifele[16]="Rossz karakter!";
+		for(uint8_t i=0;i<15;i++)
+			USART_Tx(UART0, kifele[i]);
+	}
+	return mysnake;
 }
 
 snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a magábaharapást és a gyümölcsevést is, és lekezeli
@@ -462,27 +527,29 @@ int main(void)
   /* Infinite loop */
   while (1) {
 	  SegmentLCD_AllOff();
-
+	  Delay(1000);
+	  snake mysnake;
+	  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
+	  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
+	  uint8_t food=PlaceFood(mysnake);  //random helyre most lerakok egy kaját
+	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
+	  SegmentLCD_LowerSegments(mydisplay);
+	  Delay(1000);
 	  if(UARTflag) {
 		//UARTvalue=USART_RxDataGet(UART0); //itt NEM szabad kiolvasni
 	  	UARTflag = false;
 	  	USART_Tx(UART0, UARTvalue);
+	  	mysnake=NextDir(mysnake, UARTvalue);
 	  }
-
-	  snake mysnake;
-	  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
-
-
-
-	  uint8_t food=PlaceFood(mysnake);  //random helyre most lerakok egy kaját
-	  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
+	  mysnake=MoveSnake(mysnake, &food);
 	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
 	  SegmentLCD_LowerSegments(mydisplay);
-//	  Delay(1000);
+	  Delay(1000);
+
 	  //"mozduljon el" a snake
-	  mysnake.body[15]=0;
-	  mysnake.body[16]=1;
-	  food=PlaceFood(mysnake);
+//	  mysnake.body[15]=0;
+//	  mysnake.body[16]=1;
+//	  food=PlaceFood(mysnake);
 //	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
 //	  SegmentLCD_LowerSegments(mydisplay);
 //	  Delay(1000);
