@@ -1,5 +1,4 @@
 #include "timer.h"
-#include "uart.c"
 
 volatile int32_t runTime;
 #define COMP_CONST 1

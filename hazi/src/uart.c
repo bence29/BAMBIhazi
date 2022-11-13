@@ -1,5 +1,8 @@
 #include "uart.h"
 
+volatile int UARTvalue;
+volatile bool UARTflag=false;
+
 void UART0_RX_IRQHandler(void) {
 	UARTvalue=USART_RxDataGet(UART0);   //ezt itt kell kiolvasni, különben a megszakításban marad a program
 	UARTflag = true;

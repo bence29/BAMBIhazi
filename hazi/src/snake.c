@@ -149,14 +149,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	bool fruiteaten=true;
 	if((mysnake.dir==upup)||mysnake.dir==downdown) {  //upup , downdown , leftleft , rightright, upleft, downleft, upright, downright, rightdown, leftdown, rightup, leftup
 		if(head>=7&&head<=14) {
-			if(mysnake.body[head+15]!=0)
+			if(mysnake.body[head+15]>1) //magic cucc, azért nem jó az 1-sem, mert az mozgás után a csökkentett értéken kellene nézni, hogy beleharap-e magába, 1-1=0, tehát még jó
 				mysnake.isAlive=false;
 			mysnake.body[head+15]=mysnake.size+1;
 			headforfruit=head+15;
 			head=37;
 		}
 		else if(head>=22&&head<=29) {
-			if(mysnake.body[head-15]!=0)
+			if(mysnake.body[head-15]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-15]=mysnake.size+1;
 			headforfruit=head-15;
@@ -169,14 +169,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==leftleft) {
 		if((head>=1&&head<=6)||(head>=16&&head<=21)||(head>=31&&head<=36)) {
-			if(mysnake.body[head-1]!=0)
+			if(mysnake.body[head-1]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-1]=mysnake.size+1;
 			headforfruit=head-1;
 			head=37;
 		}
 		else if(head==0||head==15||head==30) {
-			if(mysnake.body[head+6]!=0)
+			if(mysnake.body[head+6]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+6]=mysnake.size+1;
 			headforfruit=head+6;
@@ -189,14 +189,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==rightright) {
 		if((head>=0&&head<=5)||(head>=15&&head<=20)||(head>=30&&head<=35)) {
-			if(mysnake.body[head+1]!=0)
+			if(mysnake.body[head+1]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+1]=mysnake.size+1;
 			headforfruit=head+1;
 			head=37;
 		}
 		else if(head==6||head==21||head==36) {
-			if(mysnake.body[head-6]!=0)
+			if(mysnake.body[head-6]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-6]=mysnake.size+1;
 			headforfruit=head-6;
@@ -209,14 +209,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==upleft) {
 		if((head>=8&&head<=14)||(head>=23&&head<=29)) {
-			if(mysnake.body[head-8]!=0)
+			if(mysnake.body[head-8]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-8]=mysnake.size+1;
 			headforfruit=head-8;
 			head=37;
 		}
 		else if(head==7||head==22) {
-			if(mysnake.body[head-1]!=0)
+			if(mysnake.body[head-1]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-1]=mysnake.size+1;
 			headforfruit=head-1;
@@ -228,15 +228,15 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 		}
 	}
 	else if(mysnake.dir==downleft) {
-		if((head>=8&&head<=14)||(head>=23&&head<=29)) { //aaaa
-			if(mysnake.body[head+7]!=0)
+		if((head>=8&&head<=14)||(head>=23&&head<=29)) {
+			if(mysnake.body[head+7]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+7]=mysnake.size+1;
 			headforfruit=head+7;
 			head=37;
 		}
 		else if(head==7||head==22) {
-			if(mysnake.body[head+14]!=0)
+			if(mysnake.body[head+14]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+14]=mysnake.size+1;
 			headforfruit=head+14;
@@ -249,14 +249,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==upright) {
 		if((head>=7&&head<=13)||(head>=22&&head<=28)) {
-			if(mysnake.body[head-7]!=0)
+			if(mysnake.body[head-7]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-7]=mysnake.size+1;
 			headforfruit=head-7;
 			head=37;
 		}
 		else if(head==14||head==29) {
-			if(mysnake.body[head-14]!=0)
+			if(mysnake.body[head-14]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-14]=mysnake.size+1;
 			headforfruit=head-14;
@@ -269,14 +269,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==downright) {
 		if((head>=7&&head<=13)||(head>=22&&head<=28)) {
-			if(mysnake.body[head+8]!=0)
+			if(mysnake.body[head+8]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+8]=mysnake.size+1;
 			headforfruit=head+8;
 			head=37;
 		}
 		else if(head==14||head==29) {
-			if(mysnake.body[head+1]!=0)
+			if(mysnake.body[head+1]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+1]=mysnake.size+1;
 			headforfruit=head+1;
@@ -289,14 +289,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==rightdown) {
 		if((head>=0&&head<=6)||(head>=15&&head<=21)) {
-			if(mysnake.body[head+8]!=0)
+			if(mysnake.body[head+8]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+8]=mysnake.size+1;
 			headforfruit=head+8;
 			head=37;
 		}
 		else if(head>=30&&head<=36) {
-			if(mysnake.body[head-22]!=0)
+			if(mysnake.body[head-22]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-22]=mysnake.size+1;
 			headforfruit=head-22;
@@ -309,14 +309,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==leftdown) {
 		if((head>=0&&head<=6)||(head>=15&&head<=21)) {
-			if(mysnake.body[head+7]!=0)
+			if(mysnake.body[head+7]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+7]=mysnake.size+1;
 			headforfruit=head+7;
 			head=37;
 		}
 		else if(head>=30&&head<=36) {
-			if(mysnake.body[head-23]!=0)
+			if(mysnake.body[head-23]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-23]=mysnake.size+1;
 			headforfruit=head-23;
@@ -329,14 +329,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==rightup) {
 		if((head>=15&&head<=21)||(head>=30&&head<=36)) {
-			if(mysnake.body[head-7]!=0)
+			if(mysnake.body[head-7]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-7]=mysnake.size+1;
 			headforfruit=head-7;
 			head=37;
 		}
 		else if(head>=0&&head<=6) {
-			if(mysnake.body[head+23]!=0)
+			if(mysnake.body[head+23]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+23]=mysnake.size+1;
 			headforfruit=head+23;
@@ -349,14 +349,14 @@ snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a mag
 	}
 	else if(mysnake.dir==leftup) {
 		if((head>=15&&head<=21)||(head>=30&&head<=36)) {
-			if(mysnake.body[head-8]!=0)
+			if(mysnake.body[head-8]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head-8]=mysnake.size+1;
 			headforfruit=head-8;
 			head=37;
 		}
 		else if(head>=0&&head<=6) {
-			if(mysnake.body[head+22]!=0)
+			if(mysnake.body[head+22]>1)
 				mysnake.isAlive=false;
 			mysnake.body[head+22]=mysnake.size+1;
 			headforfruit=head+22;

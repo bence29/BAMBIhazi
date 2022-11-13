@@ -16,10 +16,11 @@
 #include "snake.h"
 #include "timer.h"
 
+
 extern volatile int UARTvalue;
 extern volatile bool UARTflag;
 extern volatile bool TIMERflag;
-volatile bool UARThappened;
+volatile bool UARThappened; //máshogy kell mozogni attól függõen, hogy az UART által beolvasott j/b mikor jött be
 
 int main(void)
 {
@@ -31,50 +32,54 @@ int main(void)
   SegmentLCD_Init(false);
   /* If first word of user data page is non-zero, enable Energy Profiler trace */
   BSP_TraceProfilerSetup();
-  /* Setup SysTick Timer for 1 msec interrupts  */
-  if (SysTick_Config(CMU_ClockFreqGet(cmuClock_CORE) / 1000)) {
-	  while (1) ;
-  }
-    // 7+5*6=37 mezõ van. uint8_t-ben elég tárolni azt, hogy a mezõ a kígyó hanyadik eleme (az 1. elem a feje)
-    /*		Kijelzõ kódolása:
-    *    --------- 0,a --------
-    *
-    *   |     \7,h  |8,j  /    |
-    *   |5,f   \    |    /9,k  |1,b
-    *   |       \   |   /      |
-    *
-    *    --- 6,g --   -- 10,m --
-    *
-    *   |      /    |    \11,n |
-    *   |4,e  /13,q |12,p \    |2,c
-    *   |    /      |      \   |
-    *
-    *    --------- 3,d --------
-    */
   /* Infinite loop */
-  while (1) {
-	  SegmentLCD_AllOff();
-	  snake mysnake;
-	  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
-	  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
-	  uint8_t food=16;  //random helyre most lerakok egy kaját
+  SegmentLCD_AllOff();
+  snake mysnake;
+  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
+  bool SymbolFlip=false;
 
+  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
+  uint8_t food=PlaceFood(mysnake);  //random helyre most lerakok egy kaját
+  while (1) {
 	  if(UARTflag) {
 		//UARTvalue=USART_RxDataGet(UART0); //itt NEM szabad kiolvasni
 	  	UARTflag=false;
 	  	USART_Tx(UART0, UARTvalue);
 	  	UARThappened=true;
 	  }
+
 	  if(TIMERflag) {
-		if(UARThappened)
-			mysnake=NextDirUART(mysnake, UARTvalue);
-		else
-			mysnake=NextDirNoUART(mysnake);
-		UARThappened=false;
-	  	TIMERflag=false;
-	  	mysnake=MoveSnake(mysnake, &food);
-	  	*mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
-		SegmentLCD_LowerSegments(mydisplay);
+		 TIMERflag=false;
+		 if(mysnake.isAlive) {
+			if(UARThappened)
+				mysnake=NextDirUART(mysnake, UARTvalue);
+			else
+				mysnake=NextDirNoUART(mysnake);
+			UARThappened=false;
+	  		mysnake=MoveSnake(mysnake, &food);
+	  		*mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
+			SegmentLCD_LowerSegments(mydisplay);
+		 }
+		 else {
+			 SegmentLCD_AllOff();
+			 if(SymbolFlip) {
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP2, 1);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP3, 1);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP4, 1);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP5, 1);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP6, 1);
+				 SymbolFlip=false;
+			 }
+			 else {
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP2, 0);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP3, 0);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP4, 0);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP5, 0);
+				 SegmentLCD_Symbol(LCD_SYMBOL_DP6, 0);
+				 SymbolFlip=true;
+			 }
+		 }
 	  }
+	  SegmentLCD_Number(mysnake.size);
   }
 }
