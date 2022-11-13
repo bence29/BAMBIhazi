@@ -1,3 +1,4 @@
+#pragma once
 #include "em_device.h"
 #include "em_chip.h"
 
@@ -7,10 +8,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+
 #include "segmentlcd.h"
 #include "segmentlcd_individual.h"
 
 #include "stdlib.h" //véletlen kaja hely generáláshoz
+
+#include "uart.h"
+
+extern volatile int UARTvalue;
+extern volatile bool UARTflag;
+
+
+
+
 
 volatile uint32_t msTicks; /* counts 1ms timeTicks */
 
@@ -66,7 +78,7 @@ uint8_t PlaceFood(snake mysnake) {  //random helyre rakja a kaját ahol nincs a k
 	return food;
 }
 
-snake MoveSnake(snake mysnake, uint8_t fruit) { //snake-et mozgatja, nézi a magábaharapást és a gyümölcsevést is, és lekezeli
+snake MoveSnake(snake mysnake, uint8_t *fruit) { //snake-et mozgatja, nézi a magábaharapást és a gyümölcsevést is, és lekezeli
 	uint8_t head, headforfruit; //head lesz az, amit nézni fog az irány mellett ahhoz, hogy merre léptesse a kígyót, de a head a lépés után el lesz rontva, hogy átugorja a többi if else-t, a headforfruit megmarad, hogy a gyümölcs check-re megmaradjon a fej helyzete
 	bool errorbit=true; //ha ez nem fordul false-ba és nem marad úgy, akkor size!=(legnagyobb mysnake.body[] tagjával, valami nagyon nem oké)
 	for(uint8_t i=0; i<36; i++)
@@ -86,6 +98,7 @@ snake MoveSnake(snake mysnake, uint8_t fruit) { //snake-et mozgatja, nézi a magá
 		return mysnake;
 	}
 	headforfruit=head;
+	bool fruiteaten=true;
 	if((mysnake.dir==upup)||mysnake.dir==downdown) {  //upup , downdown , leftleft , rightright, upleft, downleft, upright, downright, rightdown, leftdown, rightup, leftup
 		if(head>=7&&head<=14) {
 			if(mysnake.body[head+15]!=0)
@@ -293,11 +306,14 @@ snake MoveSnake(snake mysnake, uint8_t fruit) { //snake-et mozgatja, nézi a magá
 		return mysnake;
 	}
 	mysnake.size++; //növeljük a size méretét, feltételezve, hogy megette a gyümölcsöt
-	if(headforfruit!=fruit) {//ha a fej helyzete a gyümölcsben van, akkor megette, tehát a kígyó méretét nem kell csökkenteni, amúgy meg igen, és...
+	if(headforfruit!=*fruit) {//ha a fej helyzete a gyümölcsben van, akkor megette, tehát a kígyó méretét nem kell csökkenteni, amúgy meg igen, és...
 		for(uint8_t i=0; i<36; i++)
 			mysnake.body[i]--;
 		mysnake.size--;   //mivel nem ette meg a gyümölcsöt, csökkentsük vissza a méretet
+		fruiteaten=false;
 	}
+	if(fruiteaten)
+		fruit=PlaceFood(mysnake);
 	return mysnake; //még nem jó, le kell rakni új gyümölcsöt!!!!4!!!!4!
 }
 
@@ -391,6 +407,8 @@ int main(void)
   /* Chip errata */
   CHIP_Init();
 
+  uartinit();
+
   /* Enable LCD without voltage boost */
   SegmentLCD_Init(false);
   /* If first word of user data page is non-zero, enable Energy Profiler trace */
@@ -444,28 +462,38 @@ int main(void)
   /* Infinite loop */
   while (1) {
 	  SegmentLCD_AllOff();
+
+	  if(UARTflag) {
+		//UARTvalue=USART_RxDataGet(UART0); //itt NEM szabad kiolvasni
+	  	UARTflag = false;
+	  	USART_Tx(UART0, UARTvalue);
+	  }
+
 	  snake mysnake;
 	  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
+
+
+
 	  uint8_t food=PlaceFood(mysnake);  //random helyre most lerakok egy kaját
 	  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
 	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
 	  SegmentLCD_LowerSegments(mydisplay);
-	  Delay(1000);
+//	  Delay(1000);
 	  //"mozduljon el" a snake
 	  mysnake.body[15]=0;
 	  mysnake.body[16]=1;
 	  food=PlaceFood(mysnake);
-	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
-	  SegmentLCD_LowerSegments(mydisplay);
-	  Delay(1000);
-	  mysnake.body[16]=0;
-	  mysnake.body[14]=1;
-	  mysnake.body[29]=1;
-	  mysnake.body[36]=1;
-	  food=PlaceFood(mysnake);
-	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
-	  SegmentLCD_LowerSegments(mydisplay);
-	  Delay(1000);
+//	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
+//	  SegmentLCD_LowerSegments(mydisplay);
+//	  Delay(1000);
+//	  mysnake.body[16]=0;
+//	  mysnake.body[14]=1;
+//	  mysnake.body[29]=1;
+//	  mysnake.body[36]=1;
+//	  food=PlaceFood(mysnake);
+//	  *mydisplay=SnakeandFoodtoLCD(mysnake, food, mydisplay);
+//	  SegmentLCD_LowerSegments(mydisplay);
+//	  Delay(1000);
 //	  Delay(1000);
 //	  SegmentLCD_LowerSegments(disp);
 //	  Delay(1000);
