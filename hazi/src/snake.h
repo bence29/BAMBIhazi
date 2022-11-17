@@ -2,6 +2,7 @@
 #include "segmentlcd.h"
 #include "segmentlcd_individual.h"
 #include "stdlib.h"
+#include <time.h>
 
 typedef struct //structban NEM lehet kezdõ értéket adni sadge
 {
@@ -11,6 +12,8 @@ typedef struct //structban NEM lehet kezdõ értéket adni sadge
 // dir elsõ tagja a múltbeli irány, hátsó tagja pedig a következõ írány, ez egyértelmûen maghatározza a kígyó irányát
 	bool isAlive;
 } snake;
+
+volatile time_t t;
 
 snake SnakeInit(snake mysnake);
 uint8_t PlaceFood(snake mysnake);

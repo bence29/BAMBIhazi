@@ -1,8 +1,5 @@
 #include "timer.h"
 
-volatile int32_t runTime;
-#define COMP_CONST 1
-
 volatile bool TIMERflag=false;
 
 void TIMER0_IRQHandler(void){ //A timer IT ezt a függvényt hívja meg
@@ -38,12 +35,4 @@ TIMER_IntClear(TIMER0, TIMER_IF_OF);
 TIMER_IntEnable(TIMER0, TIMER_IF_OF);
 // Timer IT engedélyezése az NVIC-ben
 NVIC_EnableIRQ(TIMER0_IRQn);
-// *******************************
-// * LED inicializálása *
-// *******************************
-BSP_LedsInit();
-
-runTime = DWT->CYCCNT;
-//adouble=(double)aint;
-runTime = DWT->CYCCNT - runTime - COMP_CONST;
 }

@@ -21,6 +21,7 @@ extern volatile int UARTvalue;
 extern volatile bool UARTflag;
 extern volatile bool TIMERflag;
 volatile bool UARThappened; //máshogy kell mozogni attól függõen, hogy az UART által beolvasott j/b mikor jött be
+extern volatile time_t t;
 
 int main(void)
 {
@@ -28,21 +29,23 @@ int main(void)
   CHIP_Init();
   UartInit();
   TimerInit();
+
   /* Enable LCD without voltage boost */
   SegmentLCD_Init(false);
   /* If first word of user data page is non-zero, enable Energy Profiler trace */
   BSP_TraceProfilerSetup();
   /* Infinite loop */
   SegmentLCD_AllOff();
-  snake mysnake;
-  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7];
+
+  srand((unsigned) time(&t)); //random szám generátor seedjének beállítása
+  snake mysnake; //snake példány létrehozása
+  SegmentLCD_LowerCharSegments_TypeDef mydisplay[7]; //kijelzõ létrehozása
   bool SymbolFlip=false;
 
-  mysnake=SnakeInit(mysnake);  //próba, hogy megy-e a kirajzolás stb.
-  uint8_t food=PlaceFood(mysnake);  //random helyre most lerakok egy kaját
+  mysnake=SnakeInit(mysnake);  //snake inicializálás
+  uint8_t food=PlaceFood(mysnake);  //étel inicializálás
   while (1) {
 	  if(UARTflag) {
-		//UARTvalue=USART_RxDataGet(UART0); //itt NEM szabad kiolvasni
 	  	UARTflag=false;
 	  	USART_Tx(UART0, UARTvalue);
 	  	UARThappened=true;

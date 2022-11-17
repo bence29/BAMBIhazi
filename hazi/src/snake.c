@@ -18,7 +18,7 @@ uint8_t PlaceFood(snake mysnake) {  //random helyre rakja a kaját ahol nincs a k
 	return food;
 }
 
-snake NextDirUART(snake mysnake, char uartdir) {
+snake NextDirUART(snake mysnake, char uartdir) { //ha jött UART j/b, akkor a következõ irány e függvény szerint alakul
 	if(uartdir=='j') //ha jobbra fordul
 		switch(mysnake.dir) {
 			case(rightright):
@@ -41,7 +41,7 @@ snake NextDirUART(snake mysnake, char uartdir) {
 			case(upup):
 				mysnake.dir=upright;
 				break;
-			default:
+			default: //hiba esetén
 				mysnake.size=0;
 				mysnake.dir=rightright;
 				mysnake.isAlive=false;
@@ -71,7 +71,7 @@ snake NextDirUART(snake mysnake, char uartdir) {
 			case(upup):
 				mysnake.dir=upleft;
 				break;
-			default:
+			default: //hiba esetén
 				mysnake.size=0;
 				mysnake.dir=rightright;
 				mysnake.isAlive=false;
@@ -87,7 +87,7 @@ snake NextDirUART(snake mysnake, char uartdir) {
 	return mysnake;
 }
 
-snake NextDirNoUART(snake mysnake) {
+snake NextDirNoUART(snake mysnake) { //ha nem jött UART j/b, akkor a következõ irány e függvény szerint alakul
 		switch(mysnake.dir) {
 			case(rightright):
 			case(upright):
